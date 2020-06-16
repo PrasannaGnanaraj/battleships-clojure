@@ -8,12 +8,18 @@
             [clojure.string :as str]))
 
 (defn create-new-game [req]
+  {:status  201
+   :headers {"Content-Type" "text/plain"}
+   :body    (str (java.util.UUID/randomUUID))})
+
+(defn receive-move [id address]
   {:status  200
    :headers {"Content-Type" "text/plain"}
-   :body    (str "Hello World" req)})
+   :body    "miss"})
 
 (defroutes app-routes
   (POST "/games" [] create-new-game)
+  (POST "/games/:id" [id address] (receive-move id address))
   (route/not-found "Error, page not found!"))
 
 (defonce server-instance (atom nil))

@@ -12,6 +12,21 @@
 
 (deftest start-new-game-test
   (testing "POST /games creates new game"
-    (let [response (http/post "http://localhost:7172/games"
-                              {:form-params {"opponent_address" "http://example.com:1234"}})]
-      (is (= (:status response) 200)))))
+    (let [uuid-length 36
+          url  "http://localhost:7172/games"
+          params {"opponent_address" "http://example.com:1234"}
+          request-new-game (fn [] (http/post url {:form-params params}))
+          response (request-new-game)]
+      (is (= (:status response) 201))
+      (is (= (count (:body response)) uuid-length))
+      (is (not (= (:body response) (:body (request-new-game)))))))
+
+  (testing "Making moves"
+    (let [url  "http://localhost:7172"
+          new-game-params {:form-params {"opponent_address" "http://example.com:1234"}}
+          request-new-game (fn [] (http/post (str url "/games") new-game-params))
+          game-id (:body (request-new-game))
+          make-move (fn [x] (http/post (str url "/games/" game-id) {:form-params {"location" x} }))
+          move-result (make-move "a1")]
+      (is (= (:status move-result) 200))
+      (is (= (:body move-result) "miss")))))
